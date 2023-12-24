@@ -1,0 +1,32 @@
+boot.o: boot.S multiboot.h x86_desc.h types.h
+idt_linkage.o: idt_linkage.S
+paging.o: paging.S
+syscall_linkage.o: syscall_linkage.S
+x86_desc.o: x86_desc.S x86_desc.h types.h
+2048.o: 2048.c pit.h multiboot.h types.h x86_desc.h lib.h i8259.h debug.h \
+  tests.h init_idt.h idt_linkage.h syscall_linkage.h RTC.h 2048.h \
+  keyboard.h
+file_system.o: file_system.c multiboot.h types.h x86_desc.h lib.h i8259.h \
+  debug.h tests.h init_idt.h idt_linkage.h syscall_linkage.h paging.h \
+  file_system.h systemcalls.h
+i8259.o: i8259.c i8259.h types.h lib.h
+init_idt.o: init_idt.c x86_desc.h types.h lib.h init_idt.h idt_linkage.h \
+  syscall_linkage.h keyboard.h mouse.h ../syscalls/ece391sysnum.h i8259.h \
+  paging.h systemcalls.h pit.h multiboot.h debug.h tests.h
+kernel.o: kernel.c multiboot.h types.h x86_desc.h lib.h i8259.h debug.h \
+  tests.h init_idt.h idt_linkage.h syscall_linkage.h keyboard.h mouse.h \
+  paging.h file_system.h RTC.h systemcalls.h pit.h
+keyboard.o: keyboard.c lib.h types.h i8259.h keyboard.h systemcalls.h
+lib.o: lib.c lib.h types.h
+mouse.o: mouse.c lib.h types.h i8259.h mouse.h systemcalls.h
+paging_file.o: paging_file.c paging.h types.h systemcalls.h
+pit.o: pit.c pit.h multiboot.h types.h x86_desc.h lib.h i8259.h debug.h \
+  tests.h init_idt.h idt_linkage.h syscall_linkage.h systemcalls.h
+RTC.o: RTC.c RTC.h multiboot.h types.h x86_desc.h lib.h i8259.h debug.h \
+  tests.h init_idt.h idt_linkage.h syscall_linkage.h systemcalls.h
+systemcalls.o: systemcalls.c x86_desc.h types.h paging.h systemcalls.h \
+  file_system.h lib.h keyboard.h RTC.h multiboot.h i8259.h debug.h \
+  tests.h init_idt.h idt_linkage.h syscall_linkage.h pit.h
+tests.o: tests.c tests.h x86_desc.h types.h lib.h file_system.h RTC.h \
+  multiboot.h i8259.h debug.h init_idt.h idt_linkage.h syscall_linkage.h \
+  keyboard.h

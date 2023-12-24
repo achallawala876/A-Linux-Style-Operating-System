@@ -1,0 +1,162 @@
+// Checkpoint 1:
+
+Problem: Incorrectly defined folder in test_debug properties.
+Symptom: Our previously working IDT and GDT would bootloop.
+Time of finding: 15 minutes after figuring out potential causes of the problem.
+Time of fixing: Just a change of lines.
+
+Problem: While cascading to the second PIC, irq was being called for PIC 2 as well.
+Symptom: Issues with PIC configuration.
+Time of finding: Required a fair bit of stepping with GDB.
+Time of fixing: A quick modification to the existing code.
+
+Problem: IDT was not set for 0x28.
+Symptom: RTC not working.
+Time of finding: Visually stepping through code and testing it several times.
+Time of fixing: Additional initialization.
+
+Problem: Semantic errors with disable_irq().
+Symptom: Default interrupt handler being invoked even though all interrupts were being masked on PIC.
+Time of finding: Visual and logical debugging to understand code structure.
+Time of fixing: 45 minuites to understand root cause and isolate error.
+
+Problem: Incorrect setting of base level address for the kernel page.
+Symptom: Bootlooping.
+Time of finding: 1.5 hours before realizing the issue after consulting documentation and slides.
+Time of fixing: Just a line change.
+
+Problem: Backspace character was swapped with insert character.
+Symptom: Insert was deleting values while backspace was not.
+Time of finding: 35 minutes of stepping with GDB and observing screen outputs.
+Time of fixing: Simple code changes.
+
+Problem: Incorrect syntax involving typedef.
+Symptom: Compilation issues because of structs in paging.h.
+Time of finding: Revisited C documentation online to brush up on basics.
+Time of fixing: Using typedef in the right way with some simple code modifications.
+
+// Checkpoint 2:
+
+// FILE SYSTEM:
+Problem: Very large array being initialized in file_system.h, taking up all the space on the 4 MB
+         kernel page.
+Symptom: The mod->start address for the filesystem data structure was starting an address beyond
+         8 MB, indicating garbage on the kernel page and giving us page faults when we tried to
+         access attributes with the fileSystemPtr.
+Time of finding: More than an hour of utter confusion until we were pointed towards this concept
+                 by a TA.
+Time of fixing: Just removing the initialization of data_array[1023][4096].
+
+Problem: "Static" required when declaring certain pointer variables (inode_t, boot_block_t, etc.).
+Symptom: Page fault when typecasting to these variables and attempting to use them.
+Time of finding: A couple of minutes of trial and error.
+Time of fixing: A couple of lines.
+
+Problem: Cannot just declare a struct pointer and pass that to a function - need to create a struct
+         instance on runtime stack or heap and then create a pointer for that.
+Symptom: Invalid pointer being passed to read_dentry_by_name function as exposed by GDB.
+Time of finding: GDB and some recall of CS225/ECE220 concepts.
+Time of fixing: A couple of lines.
+
+Problem: Returning global byte_offset instead of the bytes written for data_read call.
+Symptom: For loops for printing file data to QEMU console showed weird data.
+Time of finding: 40 minutes with print statements.
+Time of fixing: An hour of altering logic to also account for the case in which we reach
+                the end of the file's data, where any more read_data calls should return
+                0 bytes read.
+
+Problem: Setting byte_offset = read_data call rather than byte_offset += read_data call,
+         leading to incorrect internal offsets for tracking how many bytes have been written
+         for a specific file.
+Symptom: Incorrect offsets and strange data printing.
+Time of finding: 20 minutes while debugging other issue.
+Time of fixing: A line was changed.
+
+Throwback problem: Character arrays don't seg fault when you go past the defined size. Read up on  
+                   static and heap/runtime stack for structs in C.
+
+// KEYBOARD AND TERMINAL:
+Problem: backspace not working to remove previous line
+Symptom: Didnt have a flag for enter being pressdd
+Time of finding: Reading docs
+Time of fixing: 1 hour
+
+// RTC:
+Problem: Cannot reference the buffer value directly... must pass a pointer into function.
+Symptom: Causing paging issue.
+Time of fixing: 2 hours of figuring out the issue with GDB.
+Time of finding: Simply sending &buf to functions.
+
+Problem: Volatile int "read" was not set to high in interrupt handler, leading to infinite loop when
+         RTC_read was called (semaphore related).
+Symptom: Infinite loop.
+Time of finding: Using GDB to find out issue took an hour.
+Time of fixing: One line.
+
+// SYSTEM CALLS:
+
+Problem: EAX value loaded as return for "execute" from shell being reset within an if statement due
+         to use of "=" instead of "==".
+Symptom: "program terminated by exception" or "program terminated abnormally" error message
+          not showing up in our shell terminal.
+Process for fixings: Stepping through inline assembly code as well as C using GDB for 45 minutes
+                      to verify behaviour of code via GDB before spotting problem.
+
+Problem: Inline assembly incorrectly loading values to registers when viewed with layout asm/reg.
+Symptom: Incorrect values being passed between function calls within kernel.
+Process for fixing: Used \n after each inline assembly line and understood the use of "r" and
+                      "i" - r is used for variables and i is used for values known before compiling.
+                     
+                      Used for writing values out to a C variable:
+                        asm volatile(
+                            "movl %%eax, %0\n"
+                            :"=r"(eax_val)
+                        );
+               
+                      Used for writing values into a registers:
+                        asm volatile("movl %0, %%esp;"
+                            "movl %1, %%ebp;"
+                            "movl %2, %%eax;"
+                            "jmp rety"
+                            // "leave;"
+                            // "ret;"
+                            :
+                            : "r"(esp), "r" (ebp), "r"(eax)
+                            : "esp", "ebp"
+                        );
+
+Problem: Initial system call jump table was in C and we had print statements between our inline
+         assembly INT x80 call from kernel and the use of eax for indexing into the jump table.
+Symptom: eax was getting clobbered by print statements and other function calls.
+Process for fixing: Using GDB to monitor the variables in our inline assembly/C code and seeing
+                      eax through till the end.
+
+Problem: Buffer being created for reading file data too large, taking up too much space on the
+         kernel stack for a specific process and flowing into our PCB struct, overwriting values
+         within the file descriptor array member.
+Symptom: Couldn't return to the shell after halting any system call as the stdin/stdout values in the
+         file descriptor array were being overwritten to 0, failing certain required checks.
+Process for fixing: Stepping through entire code from the execution of shell to the execution of
+                      ls to halt and back, allowing us to see that
+                      pcb_ptr_array[pid+1] -> file_descriptor_table[0].flags = 1; was being reset.
+
+Problem: Page entry not being reset if invalid value caught within first value from shell. We were
+         attempting to halt the process for a file that wasn't an executable WITHIN out page fault handler, leading to the halt function page faulting and a subsequent infinite loop.
+Symptom: Unable to return from page fault handler to running shell within which we can type. Constant
+         looping of page fault handler with print statements showing the page fault address.
+Process for fixing: Understanding that logically we don't have to call halt for an exception invoked
+                    from within shell and that we must instead reset the page table entry for shell.
+
+Problem: String buffers in C are terrible, terrible things with erratic behavior.
+Symptom: Erratic behaviour of buffers with ls not printing to screen after minor changes.
+Process for fixing: Simple tweaks to make sure strings are null terminated.
+
+// Checkpoint 4:
+
+Problem: pcb_ptr_array[pid]->get_argument was not being cleared for new grep calls with 'grep --'. 
+Symptom: Second call with grep -- was not working because buffer was not being cleared.
+Process for fixing: Realizing by typing the command multiple times.
+
+Problem: Going beyond multiple programs (pid incrementing too much)
+Symptom: Multiple shells page faulting.
+Process for fixing: Simply capping the pid at 2 programs.
