@@ -13,12 +13,12 @@
 // int32_t terminal_open (int32_t filename, void* arg2, int32_t arg3);
 // int32_t terminal_close (int32_t fd, void* arrg2, int32_t arg3);
 void mouse_init();
-void padle_bhenchod();
-void likhle_bhenchod();
-void likh_rahahu_chutiye(uint8_t data);
-uint8_t padh_rahahu_chutiye();
+void padhle();
+void likhle();
+void likh_rahahu(uint8_t data);
+uint8_t padh_rahahu();
 int32_t khulja_simsim(int32_t* inode, char* filename);
-int32_t bhag_bsdk(int32_t* inode);
+int32_t bhag(int32_t* inode);
 void mouse_intr_handler();
 
 
