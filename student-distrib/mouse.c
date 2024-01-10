@@ -31,32 +31,32 @@ void mouse_init(){
     move_x=0;
     move_y=0;
     dheela='E';
-    padle_bhenchod();
+    padhle();
     outb(0xa8,MOUSE_DATA_PORT);
-    padle_bhenchod();
+    padhle();
     outb(0x20,MOUSE_DATA_PORT);
     
-    likhle_bhenchod();
+    likhle();
     uint8_t status = inb(KEYBOARD_DATA_PORT);
     status |= 2;
     status &= 0xdf;
-    padle_bhenchod();
+    padhle();
     outb(0x60,MOUSE_DATA_PORT);
-    padle_bhenchod();
+    padhle();
     // printf("%d",move_x);
     outb(status,KEYBOARD_DATA_PORT);
 
-    likh_rahahu_chutiye(0xf6);
-    padh_rahahu_chutiye();
+    likh_rahahu(0xf6);
+    padh_rahahu();
     // printf("%d",move_x);
-    likh_rahahu_chutiye(0xf4);
-    padh_rahahu_chutiye();
+    likh_rahahu(0xf4);
+    padh_rahahu();
     // printf("%d",move_x);
-    padle_bhenchod();
-    likh_rahahu_chutiye(0xf3);
-    padh_rahahu_chutiye();
-    // likh_rahahu_chutiye(100);
-    // padh_rahahu_chutiye();
+    padhle();
+    likh_rahahu(0xf3);
+    padh_rahahu();
+    // likh_rahahu(100);
+    // padh_rahahu();
     outb(200, KEYBOARD_DATA_PORT);
 
     enable_irq(12);
@@ -108,26 +108,26 @@ void mouse_intr_handler(){
 
 
 
-void padle_bhenchod() {
+void padhle() {
     int i = 100000;
     while(i-- && inb(MOUSE_DATA_PORT) & 2);
 }
 
-void likhle_bhenchod() {
+void likhle() {
     int i = 100;
     while(i-- && inb(MOUSE_DATA_PORT) & 1);
 }
 
 
-void likh_rahahu_chutiye(uint8_t data){
-    padle_bhenchod();
+void likh_rahahu(uint8_t data){
+    padhle();
     outb(0xd4,MOUSE_DATA_PORT);
-    padle_bhenchod();
+    padhle();
     outb(data,KEYBOARD_DATA_PORT);
 }
 
-uint8_t padh_rahahu_chutiye(){
-    likhle_bhenchod();
+uint8_t padh_rahahu(){
+    likhle();
     return inb(KEYBOARD_DATA_PORT);
 }
 
@@ -151,7 +151,7 @@ int32_t khulja_simsim(int32_t* inode, char* filename) {
 }
 
 
-int32_t bhag_bsdk(int32_t* inode) {
+int32_t close(int32_t* inode) {
     mouse_used = 0;
     return 0;
 }
