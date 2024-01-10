@@ -14,7 +14,7 @@ int x=0,y=0,l=0,r=0,m=0;
 int32_t move_x;
 int32_t move_y;
 int mouse_used=0;
-int dheela;
+int checker;
 syscall_func_t terminal_table[4];
 
 
@@ -30,7 +30,7 @@ void mouse_init(){
     // y = 0;
     move_x=0;
     move_y=0;
-    dheela='E';
+    checker='E';
     padhle();
     outb(0xa8,MOUSE_DATA_PORT);
     padhle();
@@ -80,8 +80,8 @@ void mouse_intr_handler(){
     if (read1 & 16){x_move = 0xFFFFFF00 | x_move;}
     if (read1 & 32){y_move = 0xFFFFFF00 | y_move;}
     if (read1 & 4){update_colors();}
-    if (dheela!='+')
-        {fixed=dheela;}
+    if (checker!='+')
+        {fixed=checker;}
     int old_x=move_x;
     int old_y=move_y;
     move_x=move_x+(x_move>>3);
@@ -94,12 +94,12 @@ void mouse_intr_handler(){
     if(move_y > SCREEN_HEIGHT-1 )move_y = SCREEN_HEIGHT-1;
 
     // if (read1 & 16)
-    dheela=read_char(move_y,move_x);
+    checker=read_char(move_y,move_x);
     clear_mouse(old_y,old_x);
     update_mouse(move_y,move_x);
     if (fixed != ' ')
         update_char(fixed,old_y,old_x);
-    // printf("%c \n",dheela);
+    // printf("%c \n",checker);
 
     sti();
     send_eoi(12);
